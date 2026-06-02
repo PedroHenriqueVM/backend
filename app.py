@@ -1,3 +1,12 @@
+import sys
+
+if sys.platform != "win32":
+    try:
+        from gevent import monkey
+        monkey.patch_all()
+    except ImportError:
+        print("Gevent não instalado!")
+
 from flask import Flask, request, session, jsonify
 from flask_socketio import SocketIO, emit
 from google import genai
@@ -17,7 +26,6 @@ instrucoes = """
 Você é um assistente virtual fanático de futebol e conhece tudo sobre a história do São Paulo Futebol Clube. Sua função é responder a perguntas dos usuários e fornecer informações somente sobre o São Paulo FC, caso alguém te pergunte sobre outros times, diga que você não sabe de nada sobre times pequenos, que você sabe só informações sobre o maior time do Brasil o São Paulo.
 Tente manter as respostas claras. Se não souber a resposta, diga que não sabe e sugira que o usuário procure em outro lugar.
 Responda grosserias, ofensas e palavrões de forma amigável e cortês.
-"""
 
 # Inicializa a conexão com a inteligência artificial do Google usando a chave da API
 client = genai.Client(api_key=os.getenv("GENAI_KEY"))
