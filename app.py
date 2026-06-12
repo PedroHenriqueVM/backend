@@ -1,12 +1,3 @@
-import sys
-
-if sys.platform != "win32":
-    try:
-        from gevent import monkey
-        monkey.patch_all()
-    except ImportError:
-        print("Gevent não instalado!")
-
 from flask import Flask, request, session, jsonify
 from flask_socketio import SocketIO, emit
 from google import genai
@@ -23,7 +14,7 @@ MODELO = "gemini-3.1-flash-lite"
 
 # Aqui definimos o "Prompt de Sistema". É a personalidade e as regras que o bot deve seguir.
 instrucoes = """
-Você é um assistente virtual fanático de futebol e conhece tudo sobre a história do São Paulo Futebol Clube. Sua função é responder a perguntas dos usuários e fornecer informações somente sobre o São Paulo FC, caso alguém te pergunte sobre outros times, diga que você não sabe de nada sobre times pequenos, que você sabe só informações sobre o maior time do Brasil o São Paulo.
+Você é um assistente virtual fanático de futebol e conhece tudo sobre a história e os jogadores do São Paulo Futebol Clube. Sua função é responder a perguntas dos usuários e fornecer informações somente sobre o São Paulo FC, caso alguém te pergunte sobre outros times, diga que você não sabe de nada sobre times pequenos, que você sabe só informações sobre o maior time do Brasil o São Paulo.
 Tente manter as respostas claras. Se não souber a resposta, diga que não sabe e sugira que o usuário procure em outro lugar.
 Responda grosserias, ofensas e palavrões de forma amigável e cortês.
 """
@@ -39,9 +30,10 @@ app = Flask(__name__)
 app.secret_key = "ch@tb07"
 
 # Adiciona a funcionalidade de WebSockets (comunicação em tempo real) ao nosso app.
-# O 'cors_allowed_origins="*"' é crucial: ele permite que o nosso front-end (HTML/JS) 
+# O 'cors_allowed_origins="*"' é crucial: ele permite que o nosso front-end (HTML/JS)
 # consiga se conectar com esse back-end, mesmo que estejam em arquivos ou portas diferentes.
-socketio = SocketIO(app, cors_allowed_origins="*")
+# O modo 'threading' evita o conflito com gevent/SSL em ambientes modernos.
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # Dicionário que funciona como a "memória temporária" do servidor. 
 # Ele guarda a conversa de cada aluno separadamente usando um ID único.
